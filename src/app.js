@@ -17,8 +17,8 @@ app.use(
 
 app.use(morgan("tiny"));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
-app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({extended: true, limit: "16kb"}));
+app.use(express.json({limit: "16kb"}));
 app.use(express.static("public"));
 
 app.get("/", (req, res) =>
@@ -33,4 +33,12 @@ app.get("/", (req, res) =>
   })
 );
 
-export { app };
+// Routes import
+import userRoutes from "./routes/user.routes.js";
+import tagRoutes from "./routes/tag.routes.js";
+
+// Routes setup
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/tags", tagRoutes);
+
+export {app};
