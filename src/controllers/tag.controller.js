@@ -19,7 +19,7 @@ const createTag = asyncHandler(async (req, res) => {
   }
 
   const tag = await tagModel.create({
-    name: name.toLowerCase(),
+    name: name,
     description,
   });
 

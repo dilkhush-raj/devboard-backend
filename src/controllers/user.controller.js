@@ -128,4 +128,17 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {user}, "User logged out successfully"));
 });
 
-export {registerUser, loginUser, logoutUser};
+const getUser = asyncHandler(async (req, res) => {
+  const {username} = req.query;
+  if (!username) {
+    throw new ApiError(400, "Missing required fields");
+  }
+  console.log(username);
+
+  const user = await User.findOne({username}).select("-password -refreshToken");
+
+  return res.status(200).json(new ApiResponse(200, user));
+  return res.status(200).json(new ApiResponse(200, "user"));
+});
+
+export {registerUser, loginUser, logoutUser, getUser};
