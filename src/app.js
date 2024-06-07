@@ -1,6 +1,17 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import fs from "fs";
+import path from "path";
+import {fileURLToPath} from "url";
+import YAML from "yaml";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const file = fs.readFileSync(path.resolve(__dirname, "./swagger.yaml"), "utf8");
+const swaggerDocument = YAML.parse(file);
 
 const app = express();
 
@@ -21,15 +32,26 @@ app.use(express.urlencoded({extended: true, limit: "16kb"}));
 app.use(express.json({limit: "16kb"}));
 app.use(express.static("public"));
 
-app.get("/", (req, res) =>
+app.get("/ping", (req, res) =>
   res.json({
-    message: "DevBoard Backend 🌐",
+    message: "/",
     request: req.url,
     status: "Running smoothly 🚀",
     timestamp: new Date().toLocaleString(),
     uptime: `${Math.floor(process.uptime() / 60)} minutes ${Math.floor(
       process.uptime() % 60
     )} seconds`,
+  })
+);
+
+app.use(
+  "/",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    swaggerOptions: {
+      docExpansion: "none",
+    },
+    customSiteTitle: "DevBoard API docs",
   })
 );
 

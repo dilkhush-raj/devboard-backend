@@ -1,0 +1,103 @@
+openapi: 3.0.0
+info:
+  title: DevBoard
+  version: 1.0.0
+servers:
+  - url: https://devboard-q4gr.onrender.com
+  - url: http://localhost:8000
+tags:
+  - name: Tags
+paths:
+  /api/v1/tags/create:
+    post:
+      tags:
+        - Tags
+      summary: Add new tag
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Test
+                description: >-
+                  A platform for developing, shipping, and running applications
+                  in containers.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/tags/list:
+    get:
+      tags:
+        - Tags
+      summary: Get by pagination
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: "1"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: "5"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/tags/search:
+    get:
+      tags:
+        - Tags
+      summary: Search Tag
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: react
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/tags/update/:id:
+    put:
+      tags:
+        - Tags
+      summary: Update by Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Test.js
+                description: React is JS library
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/tags/tag/:id:
+    get:
+      tags:
+        - Tags
+      summary: Get by Id
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/tags/delete/:id:
+    delete:
+      tags:
+        - Tags
+      summary: Delete Tag
+      responses:
+        "204":
+          description: Deleted successfully
