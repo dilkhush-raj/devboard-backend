@@ -44,6 +44,16 @@ app.get("/ping", (req, res) =>
   })
 );
 
+// Routes import
+import userRoutes from "./routes/user.routes.js";
+import tagRoutes from "./routes/tag.routes.js";
+import questionRoutes from "./routes/question.routes.js";
+
+// Routes setup
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/tags", tagRoutes);
+app.use("/api/v1/questions", questionRoutes);
+
 app.use(
   "/",
   swaggerUi.serve,
@@ -54,13 +64,5 @@ app.use(
     customSiteTitle: "DevBoard API docs",
   })
 );
-
-// Routes import
-import userRoutes from "./routes/user.routes.js";
-import tagRoutes from "./routes/tag.routes.js";
-
-// Routes setup
-app.use("/api/v1/users", userRoutes);
-app.use("/api/v1/tags", tagRoutes);
 
 export {app};

@@ -2,11 +2,18 @@ openapi: 3.0.0
 info:
   title: DevBoard
   version: 1.0.0
+  description: This project aims to create a platform where developers can share knowledge, ask questions, and earn recognition for their contributions.
 servers:
   - url: https://devboard-q4gr.onrender.com
   - url: http://localhost:8000
 tags:
+  - name: Users
+  - name: Blogs
+  - name: Questions
+  - name: Answers
+  - name: Comments
   - name: Tags
+  - name: Leaderboard
 paths:
   /api/v1/tags/create:
     post:
@@ -65,6 +72,16 @@ paths:
           description: Successful response
           content:
             application/json: {}
+  /api/v1/tags/tag/:id:
+    get:
+      tags:
+        - Tags
+      summary: Get by Id
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
   /api/v1/tags/update/:id:
     put:
       tags:
@@ -83,21 +100,202 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/tags/tag/:id:
-    get:
-      tags:
-        - Tags
-      summary: Get by Id
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json: {}
   /api/v1/tags/delete/:id:
     delete:
       tags:
         - Tags
       summary: Delete Tag
+      responses:
+        "204":
+          description: Deleted successfully
+
+  /api/v1/questions/create:
+    post:
+      tags:
+        - Questions
+      summary: Create new question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+                - author
+              properties:
+                title:
+                  type: string
+                  example: Test
+                content:
+                  type: string
+                  example: >-
+                    A platform for developing, shipping, and running applications
+                    in containers.
+                author:
+                  type: string
+                  example: "6662338196e7a6fedc4229f2"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/questions/author:
+    get:
+      tags:
+        - Questions
+      summary: Get questions by author Id with pagination, default limit is 5
+      parameters:
+        - name: author
+          in: query
+          schema:
+            type: string
+          example: "6655a5ec7e7e084884bff451"
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: "1"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: "5"
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - created_at
+              - -created_at
+              - title
+              - -title
+          example: "-created_at"
+          description: Sort order (ascending or descending)
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/questions/list:
+    get:
+      tags:
+        - Questions
+      summary: Get questions with pagination, default limit is 5
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: "1"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: "5"
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - created_at
+              - -created_at
+              - title
+              - -title
+          example: "-created_at"
+          description: Sort order (ascending or descending)
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/questions/search:
+    get:
+      tags:
+        - Questions
+      summary: Search Question
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: react
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: "1"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: "5"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/questions/question/{id}:
+    get:
+      tags:
+        - Questions
+      summary: Get by Id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "6661c0c61039e9d27f5dc64f"
+          description: The ID of the question to retrieve
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/questions/update/{id}:
+    put:
+      tags:
+        - Questions
+      summary: Update by Id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "6655a5ec7e7e084884bff451"
+          description: The ID of the question to update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                title: Test
+                content: >-
+                  A platform for developing, shipping, and running applications
+                  in containers.
+                tags: []
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v1/questions/delete/{id}:
+    delete:
+      tags:
+        - Questions
+      summary: Delete Question
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "6655a5ec7e7e084884bff451"
+          description: The ID of the question to delete
       responses:
         "204":
           description: Deleted successfully
