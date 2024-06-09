@@ -128,17 +128,120 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {user}, "User logged out successfully"));
 });
 
+// Get user by username or email or id
 const getUser = asyncHandler(async (req, res) => {
-  const {username} = req.query;
-  if (!username) {
+  const {username, id, email} = req.query;
+
+  if (!username && !id && !email) {
     throw new ApiError(400, "Missing required fields");
   }
-  console.log(username);
 
-  const user = await User.findOne({username}).select("-password -refreshToken");
+  // Constructing the query object using $or operator
+  const query = {
+    $or: [
+      ...(username ? [{username}] : []),
+      ...(id ? [{_id: id}] : []),
+      ...(email ? [{email}] : []),
+    ],
+  };
+
+  const user = await User.findOne(query)
+    .lean()
+    .select("-password -refreshToken");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
 
   return res.status(200).json(new ApiResponse(200, user));
-  return res.status(200).json(new ApiResponse(200, "user"));
 });
 
-export {registerUser, loginUser, logoutUser, getUser};
+// Get list of all users with pagination
+const getUsersList = asyncHandler(async (req, res) => {
+  const {page = 1, limit = 5, sort, role} = req.query;
+
+  let sortField = "created_at"; // default sort field
+  let sortOrder = -1; // default sort order (descending for latest)
+
+  if (sort) {
+    if (sort.startsWith("-")) {
+      sortField = sort.substring(1);
+      sortOrder = -1; // descending order
+    } else {
+      sortField = sort;
+      sortOrder = 1; // ascending order
+    }
+  }
+
+  const query = {};
+
+  if (role) {
+    query.roles = {$in: [role]};
+  }
+
+  const totalRecords = await User.countDocuments(query);
+
+  const users = await User.find(query)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .sort({[sortField]: sortOrder})
+    .lean()
+    .select("-password -refreshToken");
+
+  return res.status(200).json(new ApiResponse(200, {totalRecords, users}));
+});
+
+// Update user
+const updateUser = asyncHandler(async (req, res) => {
+  const {id} = req.params;
+  if (!id) {
+    throw new ApiError(400, "Missing user id");
+  }
+  const {fullname, username, email, password} = req.body;
+
+  if (!fullname && !username && !email && !password) {
+    throw new ApiError(400, "Missing required fields");
+  }
+
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  if (fullname) {
+    user.fullname = fullname;
+  }
+
+  if (username) {
+    user.username = username;
+  }
+
+  if (email) {
+    user.email = email;
+  }
+
+  if (password) {
+    user.password = password;
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(user._id, user);
+
+  return res.status(200).json(new ApiResponse(200, updatedUser));
+});
+
+// Delete user
+const deleteUser = asyncHandler(async (req, res) => {
+  const {id} = req.params;
+  if (!id) {
+    throw new ApiError(400, "Missing user id");
+  }
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  await User.deleteOne({_id: id});
+  return res.status(204).json(new ApiResponse(204, "User deleted"));
+});
+
+export {registerUser, loginUser, logoutUser, getUser, getUsersList};

@@ -2,10 +2,19 @@ openapi: 3.0.0
 info:
   title: DevBoard
   version: 1.0.0
-  description: This project aims to create a platform where developers can share knowledge, ask questions, and earn recognition for their contributions.
+  description: >-
+    # DevBoard API Documentation
+
+    This project aims to create a platform where developers can share knowledge, ask questions, and earn recognition for their contributions.
+  termsOfService: "http://swagger.io/terms/"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 servers:
-  - url: https://devboard-q4gr.onrender.com
-  - url: http://localhost:8000
+  - url: http://localhost:8000/api/v1
+    description: Localhost
+  - url: https://devboard-q4gr.onrender.com/api/v1
+    description: Render
 tags:
   - name: Users
   - name: Blogs
@@ -15,7 +24,7 @@ tags:
   - name: Tags
   - name: Leaderboard
 paths:
-  /api/v1/tags/create:
+  /tags/create:
     post:
       tags:
         - Tags
@@ -35,7 +44,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/tags/list:
+  /tags/list:
     get:
       tags:
         - Tags
@@ -56,7 +65,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/tags/search:
+  /tags/search:
     get:
       tags:
         - Tags
@@ -72,7 +81,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/tags/tag/:id:
+  /tags/tag/:id:
     get:
       tags:
         - Tags
@@ -82,7 +91,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/tags/update/:id:
+  /tags/update/:id:
     put:
       tags:
         - Tags
@@ -100,7 +109,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/tags/delete/:id:
+  /tags/delete/:id:
     delete:
       tags:
         - Tags
@@ -109,7 +118,7 @@ paths:
         "204":
           description: Deleted successfully
 
-  /api/v1/questions/create:
+  /questions/create:
     post:
       tags:
         - Questions
@@ -141,7 +150,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/questions/author:
+  /questions/author:
     get:
       tags:
         - Questions
@@ -178,7 +187,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/questions/list:
+  /questions/list:
     get:
       tags:
         - Questions
@@ -210,7 +219,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/questions/search:
+  /questions/search:
     get:
       tags:
         - Questions
@@ -236,7 +245,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/questions/question/{id}:
+  /questions/question/{id}:
     get:
       tags:
         - Questions
@@ -254,7 +263,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/questions/update/{id}:
+  /questions/update/{id}:
     put:
       tags:
         - Questions
@@ -283,7 +292,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /api/v1/questions/delete/{id}:
+  /questions/delete/{id}:
     delete:
       tags:
         - Questions
@@ -296,6 +305,143 @@ paths:
             type: string
           example: "6655a5ec7e7e084884bff451"
           description: The ID of the question to delete
+      responses:
+        "204":
+          description: Deleted successfully
+
+  /users/register:
+    post:
+      tags:
+        - Users
+      summary: Register new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  example: John
+                email:
+                  type: string
+  /users/login:
+    post:
+      tags:
+        - Users
+      summary: Login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: 8WpQr@example.com
+  /users/logout:
+    post:
+      tags:
+        - Users
+      summary: Logout
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /users/user:
+    get:
+      tags:
+        - Users
+      summary: Get user by username or email or id
+      parameters:
+        - name: username
+          in: query
+          schema:
+            type: string
+          example: "algoavatar"
+        - name: id
+          in: query
+          schema:
+            type: string
+          example: "6655a5ec7e7e084884bff451"
+        - name: email
+          in: query
+          schema:
+            type: string
+          example: "teamalgoavatar@gmail.com"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /users/list:
+    get:
+      tags:
+        - Users
+      summary: Get users with pagination, default limit is 5
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: "1"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: "5"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /users/update/{id}:
+    put:
+      tags:
+        - Users
+      summary: Update by Id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "6655a5ec7e7e084884bff451"
+          description: The ID of the user to update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: John
+                email: 8WpQr@example.com
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /users/delete/{id}:
+    delete:
+      tags:
+        - Users
+      summary: Delete User
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "6655a5ec7e7e084884bff451"
+          description: The ID of the user to delete
       responses:
         "204":
           description: Deleted successfully
