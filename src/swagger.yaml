@@ -445,3 +445,237 @@ paths:
       responses:
         "204":
           description: Deleted successfully
+
+  /blogs/list:
+    get:
+      tags:
+        - Blogs
+      summary: Get blogs with pagination, default limit is 5
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: "1"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: "5"
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - published_at
+              - -published_at
+              - title
+              - -title
+          example: "-published_at"
+          description: Sort order (ascending or descending)
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /blogs/create:
+    post:
+      tags:
+        - Blogs
+      summary: Create new blog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                title: Test
+                content: >-
+                  A platform for developing, shipping, and running applications
+                  in containers.
+                author: "6655a5ec7e7e084884bff451"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /blogs/search:
+    get:
+      tags:
+        - Blogs
+      summary: Search blogs
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: "Blog"
+          description: The query string
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: "1"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: "5"
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - published_at
+              - -published_at
+              - title
+              - -title
+          example: "-published_at"
+          description: Sort order (ascending or descending)
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /blogs/blog/{id}:
+    get:
+      tags:
+        - Blogs
+      summary: Get by Id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "6666128ca9e652d582b47063"
+          description: The ID of the blog to retrieve
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /blogs/author/{id}:
+    get:
+      tags:
+        - Blogs
+      summary: Get by author
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "6655a5ec7e7e084884bff451"
+          description: The ID of the author to retrieve
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: "1"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: "5"
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - published_at
+              - -published_at
+              - title
+              - -title
+          example: "-published_at"
+          description: Sort order (ascending or descending)
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /blogs/tag/{id}:
+    get:
+      tags:
+        - Blogs
+      summary: Get by tag
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "6655d585a81fca3dcf93e10d"
+          description: The ID of the tag to retrieve
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: "1"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: "5"
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - published_at
+              - -published_at
+              - title
+              - -title
+          example: "-published_at"
+          description: Sort order (ascending or descending)
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /blogs/update/{id}:
+    put:
+      tags:
+        - Blogs
+      summary: Update by Id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "6655a5ec7e7e084884bff451"
+          description: The ID of the blog to update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                title: Test
+                content: >-
+                  A platform for developing, shipping, and running applications
+                  in containers.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
+  /blogs/delete/{id}:
+    delete:
+      tags:
+        - Blogs
+      summary: Delete by Id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "6655a5ec7e7e084884bff451"
+          description: The ID of the blog to delete
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json: {}
