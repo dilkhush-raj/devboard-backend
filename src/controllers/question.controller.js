@@ -23,7 +23,10 @@ const createQuestion = asyncHandler(async (req, res) => {
     tags: tags || [],
   });
 
-  const createdQuestion = await Question.findById(question._id);
+  const createdQuestion = await Question.findById(question._id)
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate("tags")
+    .lean();
 
   if (!createdQuestion) {
     throw new ApiError(500, "Failed to create question");
@@ -59,6 +62,8 @@ const getAllQuestions = asyncHandler(async (req, res) => {
     .sort({[sortField]: sortOrder})
     .skip((page - 1) * limit)
     .limit(limit)
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate({path: "tags", select: " -createdAt -__v"})
     .lean();
 
   return res.status(200).json(new ApiResponse(200, {totalCount, questions}));
@@ -87,6 +92,8 @@ const searchQuestions = asyncHandler(async (req, res) => {
       })
         .skip((page - 1) * limit)
         .limit(limit)
+        .populate({path: "author", select: "_id fullname username avatar"})
+        .populate({path: "tags", select: "-createdAt -__v"})
         .lean();
 
       return results;
@@ -157,7 +164,11 @@ const getQuestionById = asyncHandler(async (req, res) => {
   if (!id) {
     throw new ApiError(400, "Missing question id");
   }
-  const question = await Question.findById(id);
+  const question = await Question.findById(id)
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate({path: "tags", select: "-createdAt -__v"})
+    .lean();
+
   if (!question) {
     throw new ApiError(404, "Question not found");
   }
@@ -195,6 +206,8 @@ const getQuestionsByAuthorId = asyncHandler(async (req, res) => {
     .sort({[sortField]: sortOrder})
     .skip((page - 1) * limit)
     .limit(limit)
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate({path: "tags", select: "-createdAt -__v"})
     .lean();
 
   return res.status(200).json(new ApiResponse(200, questions));

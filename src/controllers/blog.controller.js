@@ -24,14 +24,26 @@ const createBlog = asyncHandler(async (req, res) => {
     tags: tags || [],
   });
 
-  return res.status(201).json(new ApiResponse(201, blog));
+  const createdBlog = await Blog.findOne({where: {id: blog.id}})
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate({path: "tags", select: "-createdAt -__v "})
+    .lean();
+
+  if (!createdBlog) {
+    throw new ApiError(500, "Failed to create blog");
+  }
+
+  return res.status(201).json(new ApiResponse(201, createdBlog));
 });
 
 // Get blog by id
 const getBlogById = asyncHandler(async (req, res) => {
   const {id} = req.params;
 
-  const blog = await Blog.findById(id);
+  const blog = await Blog.findById(id)
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate({path: "tags", select: "-createdAt -__v "})
+    .lean();
 
   if (!blog) {
     throw new ApiError(404, "Blog not found");
@@ -61,10 +73,12 @@ const getAllBlogs = asyncHandler(async (req, res) => {
   // Get total count of questions
   const totalCount = await Blog.countDocuments();
 
-  const blogs = await Blog.find({})
+  const blogs = await Blog.find()
     .sort({[sortField]: sortOrder})
     .skip((page - 1) * limit)
     .limit(limit)
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate({path: "tags", select: "-createdAt -__v "})
     .lean();
 
   return res.status(200).json(new ApiResponse(200, {totalCount, blogs}));
@@ -127,6 +141,8 @@ const searchBlog = asyncHandler(async (req, res) => {
         .sort({[sortField]: sortOrder})
         .skip((page - 1) * limit)
         .limit(limit)
+        .populate({path: "author", select: "_id fullname username avatar"})
+        .populate({path: "tags", select: "-createdAt -__v "})
         .lean();
 
       return results;
@@ -168,6 +184,8 @@ const getBlogByAuthor = asyncHandler(async (req, res) => {
     .sort({[sortField]: sortOrder})
     .skip((page - 1) * limit)
     .limit(limit)
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate({path: "tags", select: "-createdAt -__v "})
     .lean();
 
   return res.status(200).json(new ApiResponse(200, blog));
@@ -200,6 +218,8 @@ const getBlogByTag = asyncHandler(async (req, res) => {
     .sort({[sortField]: sortOrder})
     .skip((page - 1) * limit)
     .limit(limit)
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate({path: "tags", select: "-createdAt -__v "})
     .lean();
 
   if (blog.length === 0) {
@@ -231,7 +251,10 @@ const updateBlog = asyncHandler(async (req, res) => {
     tags: tags || [],
   });
 
-  const updatedBlog = await Blog.findById(id);
+  const updatedBlog = await Blog.findById(id)
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate({path: "tags", select: "-createdAt -__v "})
+    .lean();
 
   if (!updatedBlog) {
     throw new ApiError(404, "Blog not found");
