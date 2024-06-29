@@ -24,7 +24,7 @@ const createBlog = asyncHandler(async (req, res) => {
     tags: tags || [],
   });
 
-  const createdBlog = await Blog.findOne({where: {id: blog.id}})
+  const createdBlog = await Blog.findOne(blog._id)
     .populate({path: "author", select: "_id fullname username avatar"})
     .populate({path: "tags", select: "-createdAt -__v "})
     .lean();
@@ -263,6 +263,88 @@ const updateBlog = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, updatedBlog));
 });
 
+// Get blog by slug
+const getBlogBySlug = asyncHandler(async (req, res) => {
+  const {slug} = req.params;
+
+  if (!slug) {
+    throw new ApiError(400, "Missing slug");
+  }
+
+  const blog = await Blog.findOne({slug: slug})
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate({path: "tags", select: "-createdAt -__v "})
+    .lean();
+
+  if (!blog) {
+    throw new ApiError(404, "Blog not found");
+  }
+
+  return res.status(200).json(new ApiResponse(200, blog));
+});
+
+// Get blog by likes
+const getBlogByLikes = asyncHandler(async (req, res) => {
+  const {page = 1, limit = 5, sort} = req.query;
+
+  // Determine sort field and order
+  let sortField = "published_at"; // default sort field
+  let sortOrder = -1; // default sort order (descending for latest)
+
+  if (sort) {
+    if (sort.startsWith("-")) {
+      sortField = sort.substring(1);
+      sortOrder = -1; // descending order
+    } else {
+      sortField = sort;
+      sortOrder = 1; // ascending order
+    }
+  }
+
+  const blog = await Blog.find({like: {$gt: 0}})
+    .sort({[sortField]: sortOrder})
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .select("_id title like slug ")
+    .lean();
+
+  // sort blog by likes
+  blog.sort((a, b) => b.like - a.like);
+
+  return res.status(200).json(new ApiResponse(200, blog));
+});
+
+// Get blog by dislikes
+const getBlogByDislikes = asyncHandler(async (req, res) => {
+  const {page = 1, limit = 5, sort} = req.query;
+
+  // Determine sort field and order
+  let sortField = "published_at"; // default sort field
+  let sortOrder = -1; // default sort order (descending for latest)
+
+  if (sort) {
+    if (sort.startsWith("-")) {
+      sortField = sort.substring(1);
+      sortOrder = -1; // descending order
+    } else {
+      sortField = sort;
+      sortOrder = 1; // ascending order
+    }
+  }
+
+  const blog = await Blog.find({dislike: {$gt: 0}})
+    .sort({[sortField]: sortOrder})
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .select("_id title slug ")
+    .lean();
+
+  // sort blog by dislikes
+  blog.sort((a, b) => b.dislike - a.dislike);
+
+  return res.status(200).json(new ApiResponse(200, blog));
+});
+
 export {
   createBlog,
   getBlogById,
@@ -272,4 +354,7 @@ export {
   getBlogByAuthor,
   getBlogByTag,
   updateBlog,
+  getBlogBySlug,
+  getBlogByLikes,
+  getBlogByDislikes,
 };
