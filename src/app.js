@@ -49,12 +49,16 @@ import userRoutes from "./routes/user.routes.js";
 import tagRoutes from "./routes/tag.routes.js";
 import questionRoutes from "./routes/question.routes.js";
 import blogRoutes from "./routes/blog.routes.js";
+import feedRoutes from "./routes/feed.routes.js";
+import leaderboardRoutes from "./routes/leaderbaord.routes.js";
 
 // Routes setup
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/tags", tagRoutes);
 app.use("/api/v1/questions", questionRoutes);
 app.use("/api/v1/blogs", blogRoutes);
+app.use("/api/v1/feed", feedRoutes);
+app.use("/api/v1/leaderboard", leaderboardRoutes);
 
 app.use(
   "/",
