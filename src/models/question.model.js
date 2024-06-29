@@ -2,14 +2,18 @@ import mongoose from "mongoose";
 import slugify from "slugify";
 import shortid from "shortid";
 
-const questionSchema = new mongoose.Schema({
-  title: {type: String, required: true},
-  slug: {type: String, unique: true},
-  content: {type: String, required: true},
-  author: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
-  created_at: {type: Date, default: Date.now},
-  tags: [{type: mongoose.Schema.Types.ObjectId, ref: "Tag"}],
-});
+const questionSchema = new mongoose.Schema(
+  {
+    title: {type: String, required: true},
+    slug: {type: String, unique: true},
+    content: {type: String, required: true},
+    author: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
+    created_at: {type: Date, default: Date.now},
+    tags: [{type: mongoose.Schema.Types.ObjectId, ref: "Tag"}],
+    type: {type: String, enum: ["question"], default: "question"},
+  },
+  {timestamps: true}
+);
 
 questionSchema.pre("save", async function (next) {
   if (this.isNew || this.isModified("title")) {

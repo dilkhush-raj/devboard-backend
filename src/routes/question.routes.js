@@ -11,6 +11,7 @@ import {
   updateQuestion,
   getQuestionById,
   getQuestionsByAuthorId,
+  getQuestionBySlug,
 } from "../controllers/question.controller.js";
 
 router.route("/create").post(createQuestion);
@@ -20,5 +21,6 @@ router.route("/question/:id").get(getQuestionById);
 router.route("/delete/:id").delete(deleteQuestion);
 router.route("/update/:id").put(updateQuestion);
 router.route("/author").get(getQuestionsByAuthorId);
+router.route("/slug/:slug").get(getQuestionBySlug);
 
 export default router;

@@ -213,6 +213,24 @@ const getQuestionsByAuthorId = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, questions));
 });
 
+// Get question by slug
+const getQuestionBySlug = asyncHandler(async (req, res) => {
+  const {slug} = req.params;
+  if (!slug) {
+    throw new ApiError(400, "Missing slug");
+  }
+  const question = await Question.findOne({slug: slug})
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .populate({path: "tags", select: "-createdAt -__v"})
+    .lean();
+
+  if (!question) {
+    throw new ApiError(404, "Question not found");
+  }
+
+  return res.status(200).json(new ApiResponse(200, question));
+});
+
 export {
   createQuestion,
   getAllQuestions,
@@ -221,4 +239,5 @@ export {
   updateQuestion,
   getQuestionById,
   getQuestionsByAuthorId,
+  getQuestionBySlug,
 };
