@@ -244,4 +244,27 @@ const deleteUser = asyncHandler(async (req, res) => {
   return res.status(204).json(new ApiResponse(204, "User deleted"));
 });
 
-export {registerUser, loginUser, logoutUser, getUser, getUsersList};
+// Check if username is available
+const checkUsernameAvailability = asyncHandler(async (req, res) => {
+  const {username} = req.query;
+  if (!username) {
+    throw new ApiError(400, "Missing username");
+  }
+
+  const user = await User.findOne({username});
+
+  if (user) {
+    throw new ApiError(409, "Username already exists");
+  }
+
+  return res.status(200).json(new ApiResponse(200, "Username available"));
+});
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getUser,
+  getUsersList,
+  checkUsernameAvailability,
+};

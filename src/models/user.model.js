@@ -2,20 +2,23 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-const userSchema = new mongoose.Schema({
-  username: {type: String, required: true, unique: true},
-  fullname: {type: String, required: true},
-  email: {type: String, required: true, unique: true},
-  password: {type: String, required: true},
-  bio: {type: String, default: ""},
-  avatar: {type: String, default: ""},
-  interests: [{type: mongoose.Schema.Types.ObjectId, ref: "Tag"}],
-  permissions: {type: [String], default: []},
-  roles: {type: [String], default: []},
-  credit: {type: Number, default: 0},
-  refreshToken: {type: String, default: ""},
-  created_at: {type: Date, default: Date.now},
-});
+const userSchema = new mongoose.Schema(
+  {
+    username: {type: String, required: true, unique: true},
+    fullname: {type: String, required: true},
+    email: {type: String, required: true, unique: true},
+    password: {type: String, required: true},
+    bio: {type: String, default: ""},
+    avatar: {type: String, default: ""},
+    interests: [{type: mongoose.Schema.Types.ObjectId, ref: "Tag"}],
+    permissions: {type: [String], default: []},
+    roles: {type: [String], default: []},
+    credit: {type: Number, default: 0},
+    refreshToken: {type: String, default: ""},
+    created_at: {type: Date, default: Date.now},
+  },
+  {timestamps: true}
+);
 
 userSchema.pre("save", async function (next) {
   const user = this;
