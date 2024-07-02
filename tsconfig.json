@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "module": "ES2022",
+        "target": "ES2022",
+        "allowJs": true,
+        "checkJs": true,
+        "strict": true,
+        "noEmit": true,
+        "outDir": "dist",
+        "declaration": true,
+        "moduleResolution": "Node",
+        "allowImportingTsExtensions": true,
+        "esModuleInterop": true,
+        "baseUrl": ".",
+        "rootDir": ".",
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": ["node_modules", "dist"]
+}

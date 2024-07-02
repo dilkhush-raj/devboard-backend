@@ -5,7 +5,7 @@ import {
   getUser,
   getUsersList,
   checkUsernameAvailability,
-} from "../controllers/user.controller.js";
+} from "../controllers/user.controller.ts";
 
 const router = Router();
 

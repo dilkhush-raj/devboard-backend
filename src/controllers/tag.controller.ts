@@ -1,7 +1,8 @@
-import tagModel from "../models/tag.model.js";
-import {asyncHandler} from "../utils/asyncHandler.js";
-import {ApiError} from "../utils/ApiError.js";
-import {ApiResponse} from "../utils/ApiResponse.js";
+// @ts-nocheck
+import tagModel from "../models/tag.model.ts";
+import {asyncHandler} from "../utils/asyncHandler.ts";
+import {ApiError} from "../utils/ApiError.ts";
+import {ApiResponse} from "../utils/ApiResponse.ts";
 
 // Create a new tag
 const createTag = asyncHandler(async (req, res) => {

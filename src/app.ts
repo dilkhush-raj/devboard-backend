@@ -45,12 +45,12 @@ app.get("/ping", (req, res) =>
 );
 
 // Routes import
-import userRoutes from "./routes/user.routes.js";
-import tagRoutes from "./routes/tag.routes.js";
-import questionRoutes from "./routes/question.routes.js";
-import blogRoutes from "./routes/blog.routes.js";
-import feedRoutes from "./routes/feed.routes.js";
-import leaderboardRoutes from "./routes/leaderbaord.routes.js";
+import userRoutes from "./routes/user.routes.ts";
+import tagRoutes from "./routes/tag.routes.ts";
+import questionRoutes from "./routes/question.routes.ts";
+import blogRoutes from "./routes/blog.routes.ts";
+import feedRoutes from "./routes/feed.routes.ts";
+import leaderboardRoutes from "./routes/leaderbaord.routes.ts";
 
 // Routes setup
 app.use("/api/v1/users", userRoutes);

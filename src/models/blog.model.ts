@@ -1,25 +1,40 @@
-import mongoose from "mongoose";
+import mongoose, {Document, Schema} from "mongoose";
 import slugify from "slugify";
 import shortid from "shortid";
 
-const blogSchema = new mongoose.Schema(
+// Interface for the Blog document
+export interface IBlog extends Document {
+  slug: string;
+  banner: string;
+  author: mongoose.Types.ObjectId;
+  title: string;
+  created_at: Date;
+  content: string;
+  like: number;
+  dislike: number;
+  tags: mongoose.Types.ObjectId[];
+  comment: mongoose.Types.ObjectId[];
+  type: "blog";
+}
+
+const blogSchema = new Schema<IBlog>(
   {
     slug: {type: String, unique: true},
     banner: {type: String, default: ""},
-    author: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
+    author: {type: Schema.Types.ObjectId, ref: "User", required: true},
     title: {type: String, required: true},
     created_at: {type: Date, default: Date.now},
     content: {type: String, required: true},
     like: {type: Number, default: 0},
     dislike: {type: Number, default: 0},
-    tags: [{type: mongoose.Schema.Types.ObjectId, ref: "Tag"}],
-    comment: [{type: mongoose.Schema.Types.ObjectId, ref: "Comment"}],
+    tags: [{type: Schema.Types.ObjectId, ref: "Tag"}],
+    comment: [{type: Schema.Types.ObjectId, ref: "Comment"}],
     type: {type: String, enum: ["blog"], default: "blog"},
   },
   {timestamps: true}
 );
 
-blogSchema.pre("save", async function (next) {
+blogSchema.pre<IBlog>("save", async function (next) {
   if (this.isNew || this.isModified("title")) {
     let baseSlug = slugify(this.title, {lower: true, strict: true});
     let slug = baseSlug;
@@ -36,4 +51,4 @@ blogSchema.pre("save", async function (next) {
   next();
 });
 
-export const Blog = mongoose.model("Blog", blogSchema);
+export const Blog = mongoose.model<IBlog>("Blog", blogSchema);

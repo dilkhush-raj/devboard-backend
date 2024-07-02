@@ -2,6 +2,14 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
+interface UserPayload {
+  id: string;
+  username: string;
+  email: string;
+  permissions: string[];
+  roles: string[];
+}
+
 const userSchema = new mongoose.Schema(
   {
     username: {type: String, required: true, unique: true},
@@ -29,29 +37,36 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-userSchema.methods.isPasswordCorrect = async function (password) {
+userSchema.methods.isPasswordCorrect = async function (
+  password: string | Buffer
+) {
   return await bcrypt.compare(password, this.password);
 };
 
 userSchema.methods.generateAccessToken = function () {
-  const payload = {
+  const payload: UserPayload = {
     id: this._id,
     username: this.username,
-    name: this.name,
     email: this.email,
     permissions: this.permissions,
     roles: this.roles,
   };
-  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+
+  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET!, {
     expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
   });
 };
 
 userSchema.methods.generateRefreshToken = function () {
-  const payload = {
+  const payload: UserPayload = {
     id: this._id,
+    username: "",
+    email: "",
+    permissions: [],
+    roles: [],
   };
-  return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+
+  return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET!, {
     expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
   });
 };

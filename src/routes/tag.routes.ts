@@ -6,7 +6,7 @@ import {
   getTagById,
   deleteTag,
   updateTag,
-} from "../controllers/tag.controller.js";
+} from "../controllers/tag.controller.ts";
 
 const router = Router();
 
