@@ -1,8 +1,8 @@
 // Blog controller
-import {asyncHandler} from "../utils/asyncHandler.ts";
-import {ApiError} from "../utils/ApiError.ts";
-import {ApiResponse} from "../utils/ApiResponse.ts";
-import {Blog} from "../models/blog.model.ts";
+import {asyncHandler} from "../utils/asyncHandler";
+import {ApiError} from "../utils/ApiError";
+import {ApiResponse} from "../utils/ApiResponse";
+import {Blog} from "../models/blog.model";
 import mongoose from "mongoose";
 import {Request, Response} from "express";
 

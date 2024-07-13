@@ -11,7 +11,7 @@ import {
   getBlogBySlug,
   getBlogByLikes,
   getBlogByDislikes,
-} from "../controllers/blog.controller.ts";
+} from "../controllers/blog.controller";
 
 const router = Router();
 

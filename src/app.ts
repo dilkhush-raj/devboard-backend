@@ -6,11 +6,12 @@ import fs from "fs";
 import path from "path";
 import {fileURLToPath} from "url";
 import YAML from "yaml";
+import cookiePraser from "cookie-parser";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const file = fs.readFileSync(path.resolve(__dirname, "./swagger.yaml"), "utf8");
+const file = fs.readFileSync(
+  path.resolve(__dirname, "../swagger.yaml"),
+  "utf8"
+);
 const swaggerDocument = YAML.parse(file);
 
 const app = express();
@@ -20,9 +21,11 @@ app.use(
   cors({
     origin: [
       "https://dev-board-ten.vercel.app",
+      "https://devboard-frontend.vercel.app",
       "http://localhost:3000",
       "http://localhost:3001",
     ],
+    credentials: true,
   })
 );
 
@@ -31,6 +34,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true, limit: "16kb"}));
 app.use(express.json({limit: "16kb"}));
 app.use(express.static("public"));
+app.use(cookiePraser());
 
 app.get("/ping", (req, res) =>
   res.json({
@@ -45,12 +49,13 @@ app.get("/ping", (req, res) =>
 );
 
 // Routes import
-import userRoutes from "./routes/user.routes.ts";
-import tagRoutes from "./routes/tag.routes.ts";
-import questionRoutes from "./routes/question.routes.ts";
-import blogRoutes from "./routes/blog.routes.ts";
-import feedRoutes from "./routes/feed.routes.ts";
-import leaderboardRoutes from "./routes/leaderbaord.routes.ts";
+import userRoutes from "./routes/user.routes";
+import tagRoutes from "./routes/tag.routes";
+import questionRoutes from "./routes/question.routes";
+import blogRoutes from "./routes/blog.routes";
+import feedRoutes from "./routes/feed.routes";
+import leaderboardRoutes from "./routes/leaderbaord.routes";
+import savedRoutes from "./routes/saved.routes";
 
 // Routes setup
 app.use("/api/v1/users", userRoutes);
@@ -59,6 +64,7 @@ app.use("/api/v1/questions", questionRoutes);
 app.use("/api/v1/blogs", blogRoutes);
 app.use("/api/v1/feed", feedRoutes);
 app.use("/api/v1/leaderboard", leaderboardRoutes);
+app.use("/api/v1/saved", savedRoutes);
 
 app.use(
   "/",

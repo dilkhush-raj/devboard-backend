@@ -12,7 +12,7 @@ import {
   getQuestionById,
   getQuestionsByAuthorId,
   getQuestionBySlug,
-} from "../controllers/question.controller.ts";
+} from "../controllers/question.controller";
 
 router.route("/create").post(createQuestion);
 router.route("/list").get(getAllQuestions);

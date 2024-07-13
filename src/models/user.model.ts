@@ -22,8 +22,8 @@ const userSchema = new mongoose.Schema(
     permissions: {type: [String], default: []},
     roles: {type: [String], default: []},
     credit: {type: Number, default: 0},
-    refreshToken: {type: String, default: ""},
-    created_at: {type: Date, default: Date.now},
+    refreshToken: {type: String},
+    verified: {type: Boolean, default: false},
   },
   {timestamps: true}
 );
@@ -43,7 +43,7 @@ userSchema.methods.isPasswordCorrect = async function (
   return await bcrypt.compare(password, this.password);
 };
 
-userSchema.methods.generateAccessToken = function () {
+userSchema.methods.generateAccessToken = async function () {
   const payload: UserPayload = {
     id: this._id,
     username: this.username,
@@ -52,18 +52,14 @@ userSchema.methods.generateAccessToken = function () {
     roles: this.roles,
   };
 
-  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET!, {
+  return await jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET!, {
     expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
   });
 };
 
 userSchema.methods.generateRefreshToken = function () {
-  const payload: UserPayload = {
+  const payload: {id: string} = {
     id: this._id,
-    username: "",
-    email: "",
-    permissions: [],
-    roles: [],
   };
 
   return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET!, {

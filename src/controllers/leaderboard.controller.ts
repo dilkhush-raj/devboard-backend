@@ -1,7 +1,7 @@
 // @ts-nocheck
-import {User} from "../models/user.model.ts";
-import {ApiResponse} from "../utils/ApiResponse.ts";
-import {asyncHandler} from "../utils/asyncHandler.ts";
+import {User} from "../models/user.model";
+import {ApiResponse} from "../utils/ApiResponse";
+import {asyncHandler} from "../utils/asyncHandler";
 
 const getLeaderboard = asyncHandler(async (req, res) => {
   const {page = 1, limit = 10, sort} = req.query;

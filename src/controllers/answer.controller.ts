@@ -1,9 +1,9 @@
 // Answer controller
 import {Request, Response} from "express";
-import {Answer} from "../models/answer.model.ts";
-import {asyncHandler} from "../utils/asyncHandler.ts";
-import {ApiError} from "../utils/ApiError.ts";
-import {ApiResponse} from "../utils/ApiResponse.ts";
+import AnswerSchema from "../models/answer.model";
+import {asyncHandler} from "../utils/asyncHandler";
+import {ApiError} from "../utils/ApiError";
+import {ApiResponse} from "../utils/ApiResponse";
 
 // Define the types for the request bodies
 interface CreateAnswerRequestBody {
@@ -41,14 +41,14 @@ const createAnswer = asyncHandler(
       throw new ApiError(400, "Tags must be an array");
     }
 
-    const answer = await Answer.create({
+    const answer = await AnswerSchema.create({
       question: question,
       content: content,
       author: author,
       tags: tags || [],
     });
 
-    const createdAnswer = await Answer.findById(answer._id)
+    const createdAnswer = await AnswerSchema.findById(answer._id)
       .populate({path: "author", select: "_id fullname username avatar"})
       .populate("tags")
       .lean();
@@ -81,10 +81,10 @@ const getAllAnswers = asyncHandler(
     }
 
     // Get total count of answers
-    const totalCount = await Answer.countDocuments();
+    const totalCount = await AnswerSchema.countDocuments();
 
     // Retrieve answers with sorting and pagination
-    const answers = await Answer.find()
+    const answers = await AnswerSchema.find()
       .sort({[sortField]: sortOrder}) // Ensure sort order is of type SortOrder
       .skip((page - 1) * limit)
       .limit(limit)
@@ -115,7 +115,7 @@ const searchAnswers = asyncHandler(
         const regex = new RegExp(`.*${query}.*`, "i"); // 'i' for case-insensitive search
 
         // Full-text search with optimized query
-        const results = await Answer.find({
+        const results = await AnswerSchema.find({
           $or: [{content: regex}],
         })
           .skip((page - 1) * limit)
@@ -145,13 +145,13 @@ const deleteAnswer = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Missing answer id");
   }
 
-  const answer = await Answer.findById(id);
+  const answer = await AnswerSchema.findById(id);
 
   if (!answer) {
     throw new ApiError(404, "Answer not found");
   }
 
-  await Answer.deleteOne({_id: id});
+  await AnswerSchema.deleteOne({_id: id});
 
   return res.status(204).json(new ApiResponse(204, "Answer deleted"));
 });
@@ -172,13 +172,13 @@ const updateAnswer = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Tags must be an array");
   }
 
-  const answer = await Answer.findById(id);
+  const answer = await AnswerSchema.findById(id);
 
   if (!answer) {
     throw new ApiError(404, "Answer not found");
   }
 
-  const updatedAnswer = await Answer.findOneAndUpdate(
+  const updatedAnswer = await AnswerSchema.findOneAndUpdate(
     {_id: id},
     {$set: {content, tags}},
     {new: true}
@@ -193,7 +193,7 @@ const getAnswerById = asyncHandler(async (req: Request, res: Response) => {
   if (!id) {
     throw new ApiError(400, "Missing answer id");
   }
-  const answer = await Answer.findById(id)
+  const answer = await AnswerSchema.findById(id)
     .populate({path: "author", select: "_id fullname username avatar"})
     .populate({path: "tags", select: "-createdAt -__v"})
     .lean();

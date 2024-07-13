@@ -4,7 +4,7 @@ import {
   getFeed,
   getQuestionFeed,
   searchFeed,
-} from "../controllers/feed.controller.ts";
+} from "../controllers/feed.controller";
 
 const router = Router();
 

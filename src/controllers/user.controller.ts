@@ -1,17 +1,18 @@
 // @ts-nocheck
-import {asyncHandler} from "../utils/asyncHandler.ts";
-import {ApiError} from "../utils/ApiError.ts";
-import {User} from "../models/user.model.ts";
-import {ApiResponse} from "../utils/ApiResponse.ts";
+import {asyncHandler} from "../utils/asyncHandler";
+import {ApiError} from "../utils/ApiError";
+import {User} from "../models/user.model";
+import {ApiResponse} from "../utils/ApiResponse";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 // Generate Access and Refresh Token
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
+    const accessToken = await user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
 
     user.refreshToken = refreshToken;
     await user.save({validateBeforeSave: false});
@@ -57,7 +58,6 @@ const registerUser = asyncHandler(async (req, res) => {
   return res.status(201).json(new ApiResponse(201, createdUser));
 });
 
-// Login user
 const loginUser = asyncHandler(async (req, res) => {
   const {username, password} = req.body;
 
@@ -78,14 +78,15 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid password");
   }
 
-  const {accessToken, refreshToken} = await generateAccessAndRefreshToken(
-    user._id
-  );
-
   const loggedInUser = await User.findByIdAndUpdate(user._id).select(
     "-password -refreshToken"
   );
 
+  const {accessToken, refreshToken} = await generateAccessAndRefreshToken(
+    user._id
+  );
+
+  // Set cookie in the response
   const options = {
     httpOnly: true,
     secure: true,
@@ -95,38 +96,36 @@ const loginUser = asyncHandler(async (req, res) => {
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
-    .json(
-      new ApiResponse(
-        200,
-        {
-          user: loggedInUser,
-          accessToken,
-          refreshToken,
-        },
-        "User logged in successfully"
-      )
-    );
+    .json({
+      status: "success",
+      user: loggedInUser,
+    });
 });
 
 // Logout user
 const logoutUser = asyncHandler(async (req, res) => {
-  const {accessToken} = req.cookies;
+  const {id} = req;
+  const user = await User.findByIdAndUpdate(
+    req.id,
+    {
+      $unset: {refreshToken: 1},
+    },
+    {new: true}
+  );
 
-  if (!accessToken) {
-    throw new ApiError(401, "Access token not found");
-  }
-
-  const user = await User.findOne({accessToken});
-
-  if (!user) {
-    throw new ApiError(401, "Invalid access token");
-  }
-
-  await User.findByIdAndUpdate(user._id, {$set: {accessToken: null}});
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {user}, "User logged out successfully"));
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json({
+      status: "success",
+      user: null,
+    });
 });
 
 // Get user by username or email or id

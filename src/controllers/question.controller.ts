@@ -1,8 +1,8 @@
 // @ts-nocheck
-import {Question} from "../models/question.model.ts";
-import {asyncHandler} from "../utils/asyncHandler.ts";
-import {ApiError} from "../utils/ApiError.ts";
-import {ApiResponse} from "../utils/ApiResponse.ts";
+import {Question} from "../models/question.model";
+import {asyncHandler} from "../utils/asyncHandler";
+import {ApiError} from "../utils/ApiError";
+import {ApiResponse} from "../utils/ApiResponse";
 
 // Create question
 const createQuestion = asyncHandler(async (req, res) => {

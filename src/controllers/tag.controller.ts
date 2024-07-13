@@ -1,8 +1,7 @@
-// @ts-nocheck
-import tagModel from "../models/tag.model.ts";
-import {asyncHandler} from "../utils/asyncHandler.ts";
-import {ApiError} from "../utils/ApiError.ts";
-import {ApiResponse} from "../utils/ApiResponse.ts";
+import tagModel from "../models/tag.model";
+import {asyncHandler} from "../utils/asyncHandler";
+import {ApiError} from "../utils/ApiError";
+import {ApiResponse} from "../utils/ApiResponse";
 
 // Create a new tag
 const createTag = asyncHandler(async (req, res) => {
@@ -40,6 +39,13 @@ const getAllTags = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Missing page or limit");
   }
 
+  // @ts-ignore
+  const pageNo = page ? parseInt(page) : 1;
+  // @ts-ignore
+  const limitNo = limit ? parseInt(limit) : 10;
+
+  // const pageNo = parseInt(page);
+
   // Get total count of tags
   const totalCount = await tagModel.countDocuments();
 
@@ -47,8 +53,8 @@ const getAllTags = asyncHandler(async (req, res) => {
   const tags = await tagModel
     .find()
     .sort({name: 1})
-    .skip((page - 1) * limit)
-    .limit(limit);
+    .skip((pageNo - 1) * limitNo)
+    .limit(limitNo);
 
   return res.status(200).json(new ApiResponse(200, {totalCount, tags}));
 });
@@ -63,7 +69,7 @@ const searchTags = asyncHandler(async (req, res) => {
   }
 
   // Helper function to find tags based on search query
-  const findTags = async (q) => {
+  const findTags = async (q: any) => {
     if (typeof q !== "string" || q.trim() === "") {
       throw new Error("Search query must be a non-empty string");
     }
@@ -72,12 +78,15 @@ const searchTags = asyncHandler(async (req, res) => {
       // Create regex for case-insensitive partial and exact match
       const regex = new RegExp(`.*${q}.*`, "i");
 
+      // @ts-ignore
+      const limitNo = limit ? parseInt(limit) : 10;
+
       // Perform search with regex and limit results
       const results = await tagModel
         .find({
           $or: [{name: regex}, {description: regex}],
         })
-        .limit(limit || 10)
+        .limit(limitNo)
         .lean(); // Use lean() for better performance
 
       return results;

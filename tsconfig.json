@@ -1,21 +1,16 @@
 {
     "compilerOptions": {
-        "module": "ES2022",
-        "target": "ES2022",
-        "allowJs": true,
-        "checkJs": true,
+        "target": "ES6",
+        "module": "commonjs",
         "strict": true,
-        "noEmit": true,
-        "outDir": "dist",
-        "declaration": true,
-        "moduleResolution": "Node",
-        "allowImportingTsExtensions": true,
         "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "outDir": "dist",
+        "rootDir": "src",
+        "sourceMap": true,
         "baseUrl": ".",
-        "rootDir": ".",
     },
-    "include": [
-        "src/**/*"
-    ],
+    "include": ["src//*.ts", "src/types//*.d.ts"],
     "exclude": ["node_modules", "dist"]
 }

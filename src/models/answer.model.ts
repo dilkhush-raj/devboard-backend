@@ -1,20 +1,50 @@
-import mongoose, {Schema} from "mongoose";
+import {Schema, models, model, Document} from "mongoose";
 
-const answerSchema = new Schema(
+export interface IAnswer extends Document {
+  author: Schema.Types.ObjectId;
+  question: Schema.Types.ObjectId;
+  content: string;
+  upvotes: Schema.Types.ObjectId[];
+  downvotes: Schema.Types.ObjectId[];
+  createdAt: Date;
+}
+
+const AnswerSchema = new Schema(
   {
+    author: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     question: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Question",
       required: true,
     },
-    user: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
-    content: {type: String, required: true},
-    likes: {type: Number, default: 0},
-    dislikes: {type: Number, default: 0},
-    comment: [{type: mongoose.Schema.Types.ObjectId, ref: "Comment"}],
-    created_at: {type: Date, default: Date.now},
+    content: {
+      type: String,
+      required: true,
+    },
+    upvotes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    downvotes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {timestamps: true}
 );
 
-export const Answer = mongoose.model("Answer", answerSchema);
+const Answer = models.Answer || model("Answer", AnswerSchema);
+
+export default Answer;

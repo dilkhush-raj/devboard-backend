@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-import {app} from "./app.ts";
-import connectDB from "./db/index.ts";
+import {app} from "./app";
+import connectDB from "./db/index";
 
 dotenv.config({});
 

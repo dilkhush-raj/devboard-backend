@@ -1,8 +1,8 @@
 // @ts-nocheck
-import tagModel from "src/models/tag.model.ts";
-import {Blog} from "../models/blog.model.ts";
-import {Question} from "../models/question.model.ts";
-import {asyncHandler} from "../utils/asyncHandler.ts";
+import tagModel from "../models/tag.model";
+import {Blog} from "../models/blog.model";
+import {Question} from "../models/question.model";
+import {asyncHandler} from "../utils/asyncHandler";
 import {Request, Response} from "express";
 
 // Interface for query params (consistent with Blog and Question controllers)
@@ -18,18 +18,27 @@ type SortOrder = 1 | -1;
 
 const getFeed = asyncHandler(
   async (req: Request<{}, {}, QueryParams>, res: Response) => {
-    const {page = 1, limit = 10, tag} = req.query;
+    const {query} = req;
+
+    // @ts-ignore
+    const page = query.page ? parseInt(query.page) : 1;
+    // @ts-ignore
+    const limit = query.limit ? parseInt(query.limit) : 10;
+    const skip = (page - 1) * limit;
+    const tag = query.tag;
 
     let tagQuery = {};
     if (tag) {
       const findTag = await tagModel.findOne({name: tag});
       if (findTag) {
-        tagQuery = {tags: {$in: [findTag._id]}};
+        tagQuery = {
+          tags: {$in: [findTag._id]},
+        };
       } else {
         // If the tag is not found, return an empty result
         return res.json({
           data: [],
-          currentPage: parseInt(page, 10),
+          currentPage: page,
           totalPages: 0,
           totalItems: 0,
           totalBlogs: 0,
@@ -42,7 +51,6 @@ const getFeed = asyncHandler(
       let [blogs, questions] = [[], []];
       let totalBlogs = 0,
         totalQuestions = 0;
-      const skip = (page - 1) * limit;
 
       [blogs, questions, totalBlogs, totalQuestions] = await Promise.all([
         Blog.find(tagQuery)
@@ -68,7 +76,10 @@ const getFeed = asyncHandler(
       const data = [...blogs, ...questions];
 
       // sort feedData by created_at
-      data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      data.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
 
       const totalItems = totalBlogs + totalQuestions;
       const totalPages = Math.ceil(totalItems / limit);

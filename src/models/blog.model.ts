@@ -15,6 +15,7 @@ export interface IBlog extends Document {
   tags: mongoose.Types.ObjectId[];
   comment: mongoose.Types.ObjectId[];
   type: "blog";
+  savedByUser: mongoose.Types.ObjectId[];
 }
 
 const blogSchema = new Schema<IBlog>(
@@ -30,6 +31,7 @@ const blogSchema = new Schema<IBlog>(
     tags: [{type: Schema.Types.ObjectId, ref: "Tag"}],
     comment: [{type: Schema.Types.ObjectId, ref: "Comment"}],
     type: {type: String, enum: ["blog"], default: "blog"},
+    savedByUser: [{type: Schema.Types.ObjectId, ref: "User"}],
   },
   {timestamps: true}
 );
