@@ -12,10 +12,11 @@ import {
   getBlogByLikes,
   getBlogByDislikes,
 } from "../controllers/blog.controller";
+import verifyJWT from "src/middlewares/auth.middleware";
 
 const router = Router();
 
-router.post("/create", createBlog);
+router.route("/create").post(verifyJWT, createBlog);
 router.get("/list", getAllBlogs);
 router.get("/search", searchBlog);
 router.get("/blog/:id", getBlogById);

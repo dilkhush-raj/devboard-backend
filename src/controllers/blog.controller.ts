@@ -37,9 +37,12 @@ const createBlog = async (
   req: Request<{}, {}, CreateBlogBody>,
   res: Response
 ) => {
-  const {title, content, author, tags} = req.body;
+  const {title, content, tags} = req.body;
 
-  if ([title, content].some((v) => !v || v.length === 0) || !author) {
+  // @ts-ignore
+  const user = req.user?._id;
+
+  if ([title, content].some((v) => !v || v.length === 0)) {
     throw new ApiError(400, "Missing required fields");
   }
 
@@ -47,10 +50,12 @@ const createBlog = async (
     throw new ApiError(400, "Tags must be an array");
   }
 
+  console.log(title, content, user);
+
   const blog = await Blog.create({
     title,
     content,
-    author,
+    author: user,
     tags: tags || [],
   });
 
@@ -347,7 +352,7 @@ const getBlogByLikes = asyncHandler(
       .sort({[sortField]: sortOrder})
       .skip((page - 1) * limit)
       .limit(limit)
-      .select("_id title like slug ")
+      .select("_id title like slug banner ")
       .lean();
 
     // sort blog by likes
