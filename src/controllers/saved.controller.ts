@@ -33,6 +33,13 @@ const createSaved = asyncHandler(
       throw new ApiError(400, "Missing required fields");
     }
 
+    // Check if content is already saved
+    const isSaved = await SavedSchema.findOne({content, contentType});
+
+    if (isSaved) {
+      throw new ApiError(403, "Content already saved");
+    }
+
     const saved = await SavedSchema.create({
       user: user,
       content: content,
@@ -59,7 +66,7 @@ const getSaved = asyncHandler(
     const user = req.user?._id;
 
     // Determine sort field and order
-    let sortField: string = "created_at"; // default sort field
+    let sortField: string = "createdAt"; // default sort field
     let sortOrder: SortOrder = -1; // default sort order (descending for latest)
 
     if (sort) {
@@ -85,6 +92,13 @@ const getSaved = asyncHandler(
         populate: {
           path: "author",
           model: "User",
+        },
+      })
+      .populate({
+        path: "content",
+        populate: {
+          path: "tags",
+          model: "Tag",
         },
       })
       .lean();

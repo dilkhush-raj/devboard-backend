@@ -78,9 +78,12 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid password");
   }
 
-  const loggedInUser = await User.findByIdAndUpdate(user._id).select(
-    "-password -refreshToken"
-  );
+  const loggedInUser = await User.findByIdAndUpdate(user._id)
+    .select("-password -refreshToken")
+    .populate({
+      path: "interests",
+      model: "Tag",
+    });
 
   const {accessToken, refreshToken} = await generateAccessAndRefreshToken(
     user._id
