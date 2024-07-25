@@ -30,27 +30,27 @@ type SortOrder = 1 | -1;
 // Create answer
 const createAnswer = asyncHandler(
   async (req: Request<{}, {}, CreateAnswerRequestBody>, res: Response) => {
-    const {question, content, author, tags} = req.body;
+    const {question, content} = req.body;
+    // @ts-ignore
+    const author = req.user?._id;
 
-    // Check if any required fields are missing or empty
-    if ([question, content, author].some((v) => !v || v.length === 0)) {
-      throw new ApiError(400, "Missing required fields");
+    if (!author) {
+      throw new ApiError(400, "User not logged in");
     }
 
-    if (tags && !Array.isArray(tags)) {
-      throw new ApiError(400, "Tags must be an array");
+    // Check if any required fields are missing or empty
+    if ([question, content].some((v) => !v || v.length === 0)) {
+      throw new ApiError(400, "Missing required fields");
     }
 
     const answer = await AnswerSchema.create({
       question: question,
       content: content,
       author: author,
-      tags: tags || [],
     });
 
     const createdAnswer = await AnswerSchema.findById(answer._id)
       .populate({path: "author", select: "_id fullname username avatar"})
-      .populate("tags")
       .lean();
 
     if (!createdAnswer) {
@@ -89,7 +89,6 @@ const getAllAnswers = asyncHandler(
       .skip((page - 1) * limit)
       .limit(limit)
       .populate({path: "author", select: "_id fullname username avatar"})
-      .populate({path: "tags", select: " -createdAt -__v"})
       .lean();
 
     return res.status(200).json(new ApiResponse(200, {totalCount, answers}));
@@ -121,7 +120,6 @@ const searchAnswers = asyncHandler(
           .skip((page - 1) * limit)
           .limit(limit)
           .populate({path: "author", select: "_id fullname username avatar"})
-          .populate({path: "tags", select: "-createdAt -__v"})
           .lean();
 
         return results;
@@ -195,7 +193,6 @@ const getAnswerById = asyncHandler(async (req: Request, res: Response) => {
   }
   const answer = await AnswerSchema.findById(id)
     .populate({path: "author", select: "_id fullname username avatar"})
-    .populate({path: "tags", select: "-createdAt -__v"})
     .lean();
 
   if (!answer) {
@@ -205,8 +202,108 @@ const getAnswerById = asyncHandler(async (req: Request, res: Response) => {
   return res.status(200).json(new ApiResponse(200, answer));
 });
 
+// Get all answer by question id
+const getAnswerByQuestionId = asyncHandler(async (req, res) => {
+  const {id} = req.params;
+  if (!id) {
+    throw new ApiError(400, "Missing answer id");
+  }
+
+  // sort by most upvotes length to less upvotes
+  const answer = await AnswerSchema.find({question: id})
+    .sort({upvotes: -1})
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .lean();
+
+  if (!answer) {
+    throw new ApiError(404, "Answer not found");
+  }
+
+  return res.status(200).json(new ApiResponse(200, answer));
+});
+
+// Upvote answer
+const upvoteAnswer = asyncHandler(async (req, res) => {
+  const {id} = req.params;
+  if (!id) {
+    throw new ApiError(400, "Missing answer id");
+  }
+
+  const answer = await AnswerSchema.findById(id);
+
+  if (!answer) {
+    throw new ApiError(404, "Answer not found");
+  }
+  // @ts-ignore
+  const user = req.user?._id;
+
+  if (!user) {
+    throw new ApiError(400, "User not logged in");
+  }
+
+  if (answer.upvotes.includes(user)) {
+    // Remove the upvote
+    const updatedAnswer = await AnswerSchema.findByIdAndUpdate(
+      id,
+      {
+        $pull: {upvotes: user},
+      },
+      {new: true}
+    );
+    return res.status(200).json(new ApiResponse(200, updatedAnswer));
+  }
+
+  const UpdatedAnswer = await AnswerSchema.findByIdAndUpdate(id, {
+    $push: {upvotes: user},
+    $pull: {downvotes: user},
+  });
+  console.log(updateAnswer);
+
+  return res.status(200).json(new ApiResponse(200, UpdatedAnswer));
+});
+
+// Downvote answer
+const downvoteAnswer = asyncHandler(async (req, res) => {
+  const {id} = req.params;
+  if (!id) {
+    throw new ApiError(400, "Missing answer id");
+  }
+  const answer = await AnswerSchema.findById(id);
+  if (!answer) {
+    throw new ApiError(404, "Answer not found");
+  }
+
+  // @ts-ignore
+  const user = req.user?._id;
+  if (!user) {
+    throw new ApiError(400, "User not logged in");
+  }
+
+  if (answer.downvotes.includes(user)) {
+    // Remove the upvote
+    const updatedAnswer = await AnswerSchema.findByIdAndUpdate(
+      id,
+      {
+        $pull: {downvotes: user},
+      },
+      {new: true}
+    );
+    return res.status(200).json(new ApiResponse(200, {}, "Downvoted"));
+  }
+
+  const UpdatedAnswer = await AnswerSchema.findByIdAndUpdate(id, {
+    $push: {downvotes: user},
+    $pull: {upvotes: user},
+  });
+
+  return res.status(200).json(new ApiResponse(200, UpdatedAnswer));
+});
+
 export {
   createAnswer,
+  getAnswerByQuestionId,
+  upvoteAnswer,
+  downvoteAnswer,
   getAllAnswers,
   searchAnswers,
   deleteAnswer,
