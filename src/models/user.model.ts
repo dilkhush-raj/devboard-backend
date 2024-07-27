@@ -37,6 +37,37 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+// Pre-findOneAndUpdate middleware to hash password
+userSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate() as mongoose.UpdateQuery<any>;
+
+  if (update && update.password) {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      update.password = await bcrypt.hash(update.password, salt);
+      this.setUpdate(update);
+    } catch (error) {
+      return next(error as mongoose.CallbackError);
+    }
+  }
+  next();
+});
+
+// Pre-updateOne middleware to hash password
+userSchema.pre("updateOne", async function (next) {
+  const update = this.getUpdate() as mongoose.UpdateQuery<any>;
+
+  if (update && update.password) {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      update.password = await bcrypt.hash(update.password, salt);
+      this.setUpdate(update);
+    } catch (error) {
+      return next(error as mongoose.CallbackError);
+    }
+  }
+  next();
+});
 userSchema.methods.isPasswordCorrect = async function (
   password: string | Buffer
 ) {

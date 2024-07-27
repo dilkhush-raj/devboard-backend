@@ -5,6 +5,7 @@ import {ApiResponse} from "../utils/ApiResponse";
 import {Blog} from "../models/blog.model";
 import mongoose from "mongoose";
 import {Request, Response} from "express";
+import {User} from "src/models/user.model";
 
 interface CreateBlogBody {
   title: string;
@@ -50,8 +51,6 @@ const createBlog = async (
     throw new ApiError(400, "Tags must be an array");
   }
 
-  console.log(title, content, user);
-
   const blog = await Blog.create({
     title,
     content,
@@ -66,6 +65,9 @@ const createBlog = async (
 
   if (!createdBlog) {
     throw new ApiError(500, "Failed to create blog");
+  } else {
+    // update user credit by 10
+    await User.findByIdAndUpdate(user, {$inc: {credit: 10}});
   }
 
   return res.status(201).json(new ApiResponse(201, createdBlog));
@@ -124,16 +126,29 @@ const getAllBlogs = asyncHandler(
 // Delete blog by id
 const deleteBlogById = asyncHandler(async (req, res) => {
   const {id} = req.params;
+  // @ts-ignore
+  const user = req.user?._id;
 
   if (!id) {
     throw new ApiError(400, "Missing blog id");
   }
 
-  const blog = await Blog.findByIdAndDelete(id);
-
+  // check if user is the author of the blog
+  const blog = await Blog.findById(id);
   if (!blog) {
     throw new ApiError(404, "Blog not found");
   }
+  if (blog.author.toString() !== user.toString()) {
+    throw new ApiError(403, "You are not the author of this blog");
+  }
+
+  const deleteBlog = await Blog.findByIdAndDelete(id);
+
+  if (!deleteBlog) {
+    throw new ApiError(404, "Blog not found");
+  }
+  // update user credit by decreasing 10
+  await User.findByIdAndUpdate(user, {$inc: {credit: -10}});
 
   return res.status(204).json(new ApiResponse(204, "Blog deleted"));
 });

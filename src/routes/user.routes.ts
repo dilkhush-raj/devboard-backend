@@ -6,7 +6,9 @@ import {
   getUsersList,
   logoutUser,
   checkUsernameAvailability,
+  updateUser,
 } from "../controllers/user.controller";
+import verifyJWT from "src/middlewares/auth.middleware";
 
 const router = Router();
 
@@ -16,5 +18,6 @@ router.route("/user").get(getUser);
 router.route("/list").get(getUsersList);
 router.route("/logout").post(logoutUser);
 router.route("/checkUsernameAvailability").get(checkUsernameAvailability);
+router.route("/update").put(verifyJWT, updateUser);
 
 export default router;

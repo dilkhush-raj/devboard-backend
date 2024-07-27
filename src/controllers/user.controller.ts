@@ -196,38 +196,29 @@ const getUsersList = asyncHandler(async (req, res) => {
 
 // Update user
 const updateUser = asyncHandler(async (req, res) => {
-  const {id} = req.params;
+  // @ts-ignore
+  const id = req.user?._id;
   if (!id) {
     throw new ApiError(400, "Missing user id");
   }
-  const {fullname, username, email, password} = req.body;
+  const {fullname, username, email, password, bio} = req.body;
 
   if (!fullname && !username && !email && !password) {
     throw new ApiError(400, "Missing required fields");
   }
 
-  const user = await User.findById(id);
-  if (!user) {
+  const updateData = {};
+  if (fullname) updateData.fullname = fullname;
+  if (username) updateData.username = username;
+  if (email) updateData.email = email;
+  if (password) updateData.password = password;
+  if (bio) updateData.bio = bio;
+
+  const updatedUser = await User.findByIdAndUpdate(id, updateData, {new: true});
+
+  if (!updatedUser) {
     throw new ApiError(404, "User not found");
   }
-
-  if (fullname) {
-    user.fullname = fullname;
-  }
-
-  if (username) {
-    user.username = username;
-  }
-
-  if (email) {
-    user.email = email;
-  }
-
-  if (password) {
-    user.password = password;
-  }
-
-  const updatedUser = await User.findByIdAndUpdate(user._id, user);
 
   return res.status(200).json(new ApiResponse(200, updatedUser));
 });
@@ -270,4 +261,5 @@ export {
   getUser,
   getUsersList,
   checkUsernameAvailability,
+  updateUser,
 };

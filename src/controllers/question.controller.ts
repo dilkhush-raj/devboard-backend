@@ -6,7 +6,9 @@ import {ApiResponse} from "../utils/ApiResponse";
 
 // Create question
 const createQuestion = asyncHandler(async (req, res) => {
-  const {title, content, author, tags} = req.body;
+  // @ts-ignore
+  const author = req.user?._id;
+  const {title, content, tags} = req.body;
 
   // Check if any required fields are missing or empty
   if ([title, content, author].some((v) => !v || v.length === 0)) {
@@ -199,7 +201,7 @@ const getQuestionsByAuthorId = asyncHandler(async (req, res) => {
   }
 
   const query = {};
-  // if (author) query.author = author;
+  if (author) query.author = author;
   if (username) query.author = username;
 
   // find all questions with the given author or username
