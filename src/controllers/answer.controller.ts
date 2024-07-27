@@ -4,6 +4,7 @@ import AnswerSchema from "../models/answer.model";
 import {asyncHandler} from "../utils/asyncHandler";
 import {ApiError} from "../utils/ApiError";
 import {ApiResponse} from "../utils/ApiResponse";
+import mongoose from "mongoose";
 
 // Define the types for the request bodies
 interface CreateAnswerRequestBody {
@@ -28,38 +29,37 @@ interface QueryParams {
 type SortOrder = 1 | -1;
 
 // Create answer
-const createAnswer = asyncHandler(
-  async (req: Request<{}, {}, CreateAnswerRequestBody>, res: Response) => {
-    const {question, content} = req.body;
-    // @ts-ignore
-    const author = req.user?._id;
+const createAnswer = asyncHandler(async (req, res) => {
+  const {id} = req.params;
+  const {content} = req.body;
+  // @ts-ignore
+  const author = req.user?._id;
 
-    if (!author) {
-      throw new ApiError(400, "User not logged in");
-    }
-
-    // Check if any required fields are missing or empty
-    if ([question, content].some((v) => !v || v.length === 0)) {
-      throw new ApiError(400, "Missing required fields");
-    }
-
-    const answer = await AnswerSchema.create({
-      question: question,
-      content: content,
-      author: author,
-    });
-
-    const createdAnswer = await AnswerSchema.findById(answer._id)
-      .populate({path: "author", select: "_id fullname username avatar"})
-      .lean();
-
-    if (!createdAnswer) {
-      throw new ApiError(500, "Failed to create answer");
-    }
-
-    return res.status(201).json(new ApiResponse(201, createdAnswer));
+  if (!author) {
+    throw new ApiError(400, "User not logged in");
   }
-);
+
+  // Check if any required fields are missing or empty
+  if ([id, content].some((v) => !v || v.length === 0)) {
+    throw new ApiError(400, "Missing required fields");
+  }
+
+  const answer = await AnswerSchema.create({
+    question: id,
+    content: content,
+    author: author,
+  });
+
+  const createdAnswer = await AnswerSchema.findById(answer._id)
+    .populate({path: "author", select: "_id fullname username avatar"})
+    .lean();
+
+  if (!createdAnswer) {
+    throw new ApiError(500, "Failed to create answer");
+  }
+
+  return res.status(201).json(new ApiResponse(201, createdAnswer));
+});
 
 // Get all answers sorted by created_at and paginate
 const getAllAnswers = asyncHandler(
@@ -137,7 +137,9 @@ const searchAnswers = asyncHandler(
 
 // Delete answer
 const deleteAnswer = asyncHandler(async (req: Request, res: Response) => {
-  const {id} = req.params;
+  const {id} = req.params; // answer id
+  // @ts-ignore
+  const author = req.user?._id;
 
   if (!id) {
     throw new ApiError(400, "Missing answer id");
@@ -149,7 +151,15 @@ const deleteAnswer = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, "Answer not found");
   }
 
-  await AnswerSchema.deleteOne({_id: id});
+  if (
+    new mongoose.Types.ObjectId(answer.author).equals(
+      new mongoose.Types.ObjectId(author)
+    )
+  ) {
+    const deletedAnswer = await AnswerSchema.findByIdAndDelete(id);
+  } else {
+    throw new ApiError(403, "You are not the author of this answer");
+  }
 
   return res.status(204).json(new ApiResponse(204, "Answer deleted"));
 });
@@ -157,17 +167,16 @@ const deleteAnswer = asyncHandler(async (req: Request, res: Response) => {
 // Update answer
 const updateAnswer = asyncHandler(async (req: Request, res: Response) => {
   const {id} = req.params;
+  // @ts-ignore
+  const author = req.user?._id;
+
   if (!id) {
     throw new ApiError(400, "Missing answer id");
   }
-  const {content, tags} = req.body;
+  const {content} = req.body;
 
-  if (!content && !tags) {
-    throw new ApiError(400, "Missing content or tags");
-  }
-
-  if (tags && !Array.isArray(tags)) {
-    throw new ApiError(400, "Tags must be an array");
+  if (!content) {
+    throw new ApiError(400, "Missing content");
   }
 
   const answer = await AnswerSchema.findById(id);
@@ -176,13 +185,21 @@ const updateAnswer = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, "Answer not found");
   }
 
-  const updatedAnswer = await AnswerSchema.findOneAndUpdate(
-    {_id: id},
-    {$set: {content, tags}},
-    {new: true}
-  );
+  if (
+    new mongoose.Types.ObjectId(answer.author).equals(
+      new mongoose.Types.ObjectId(author)
+    )
+  ) {
+    const updatedAnswer = await AnswerSchema.findOneAndUpdate(
+      {_id: id},
+      {$set: {content}},
+      {new: true}
+    );
+  } else {
+    throw new ApiError(403, "You are not the author of this answer");
+  }
 
-  return res.status(200).json(new ApiResponse(200, updatedAnswer));
+  return res.status(200).json(new ApiResponse(200, "answer updated"));
 });
 
 // Get answer by id
@@ -205,21 +222,38 @@ const getAnswerById = asyncHandler(async (req: Request, res: Response) => {
 // Get all answer by question id
 const getAnswerByQuestionId = asyncHandler(async (req, res) => {
   const {id} = req.params;
+  const {page = 1, limit = 10} = req.query;
+
   if (!id) {
     throw new ApiError(400, "Missing answer id");
   }
+
+  // get total count of answers
+  const totalAnswers = await AnswerSchema.countDocuments({question: id});
 
   // sort by most upvotes length to less upvotes
   const answer = await AnswerSchema.find({question: id})
     .sort({upvotes: -1})
     .populate({path: "author", select: "_id fullname username avatar"})
+    // @ts-ignore
+    .skip((page - 1) * limit)
+    // @ts-ignore
+    .limit(limit)
     .lean();
 
   if (!answer) {
     throw new ApiError(404, "Answer not found");
   }
+  // @ts-ignore
+  const totalPages = Math.ceil(totalAnswers / limit);
 
-  return res.status(200).json(new ApiResponse(200, answer));
+  res.json({
+    answer,
+    // @ts-ignore
+    currentPage: parseInt(page, 10),
+    totalPages,
+    totalAnswers,
+  });
 });
 
 // Upvote answer
@@ -257,8 +291,6 @@ const upvoteAnswer = asyncHandler(async (req, res) => {
     $push: {upvotes: user},
     $pull: {downvotes: user},
   });
-  console.log(updateAnswer);
-
   return res.status(200).json(new ApiResponse(200, UpdatedAnswer));
 });
 
@@ -299,6 +331,39 @@ const downvoteAnswer = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, UpdatedAnswer));
 });
 
+// Get answer by user id
+const getAnswerByUserId = asyncHandler(async (req, res) => {
+  const {id} = req.params;
+  const {page = 1, limit = 10} = req.query;
+  if (!id) {
+    throw new ApiError(400, "Missing user id");
+  }
+  const answer = await AnswerSchema.find({author: id})
+    .populate({path: "author", select: "_id fullname username avatar"})
+    // @ts-ignore
+    .skip((page - 1) * limit)
+    // @ts-ignore
+    .limit(limit)
+    .lean();
+
+  // get total count of answers
+  const totalAnswers = await AnswerSchema.countDocuments({author: id});
+
+  if (!answer) {
+    throw new ApiError(404, "Answer not found");
+  }
+  // @ts-ignore
+  const totalPages = Math.ceil(totalAnswers / limit);
+
+  res.json({
+    answer,
+    // @ts-ignore
+    currentPage: parseInt(page, 10),
+    totalPages,
+    totalAnswers,
+  });
+});
+
 export {
   createAnswer,
   getAnswerByQuestionId,
@@ -309,4 +374,5 @@ export {
   deleteAnswer,
   updateAnswer,
   getAnswerById,
+  getAnswerByUserId,
 };
