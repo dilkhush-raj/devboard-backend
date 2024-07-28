@@ -12,7 +12,7 @@ import {
   getBlogByLikes,
   getBlogByDislikes,
 } from "../controllers/blog.controller";
-import verifyJWT from "src/middlewares/auth.middleware";
+import verifyJWT from "../middlewares/auth.middleware";
 
 const router = Router();
 

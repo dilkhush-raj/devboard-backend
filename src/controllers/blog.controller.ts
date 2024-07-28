@@ -5,7 +5,7 @@ import {ApiResponse} from "../utils/ApiResponse";
 import {Blog} from "../models/blog.model";
 import mongoose from "mongoose";
 import {Request, Response} from "express";
-import {User} from "src/models/user.model";
+import {User} from "../models/user.model";
 import {parse} from "dotenv";
 
 interface CreateBlogBody {

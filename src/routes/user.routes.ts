@@ -9,8 +9,8 @@ import {
   updateUser,
   uploadProfileImage,
 } from "../controllers/user.controller";
-import verifyJWT from "src/middlewares/auth.middleware";
-import upload from "src/middlewares/multer.middleware";
+import verifyJWT from "../middlewares/auth.middleware";
+import upload from "../middlewares/multer.middleware";
 
 const router = Router();
 

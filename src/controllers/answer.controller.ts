@@ -5,7 +5,7 @@ import {asyncHandler} from "../utils/asyncHandler";
 import {ApiError} from "../utils/ApiError";
 import {ApiResponse} from "../utils/ApiResponse";
 import mongoose from "mongoose";
-import {User} from "src/models/user.model";
+import {User} from "../models/user.model";
 
 // Define the types for the request bodies
 interface CreateAnswerRequestBody {
