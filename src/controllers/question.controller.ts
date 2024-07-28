@@ -213,7 +213,15 @@ const getQuestionsByAuthorId = asyncHandler(async (req, res) => {
     .populate({path: "tags", select: "-createdAt -__v"})
     .lean();
 
-  return res.status(200).json(new ApiResponse(200, questions));
+  const totalItems = await Question.countDocuments(query);
+  const totalPages = Math.ceil(totalItems / limit);
+  const currentPage = parseInt(page, 10);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, {questions, currentPage, totalPages, totalItems})
+    );
 });
 
 // Get question by slug

@@ -5,6 +5,7 @@ import {User} from "../models/user.model";
 import {ApiResponse} from "../utils/ApiResponse";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import uploadOnCloudinary from "../utils/cloudinary";
 
 // Generate Access and Refresh Token
 
@@ -254,6 +255,35 @@ const checkUsernameAvailability = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, "Username available"));
 });
 
+// Upload profile image
+const uploadProfileImage = asyncHandler(async (req, res) => {
+  // @ts-ignore
+  const userId = req.user?._id;
+
+  const files = req.files as {[key: string]: Express.Multer.File[]};
+
+  const image = files.avatar[0]?.path;
+
+  if (!image) {
+    return "No image uploaded";
+  }
+
+  const uploadImage = await uploadOnCloudinary(image);
+
+  if (!uploadImage) {
+    return "Failed to upload profile image";
+  }
+
+  console.log(uploadImage);
+
+  // image: {
+  //   url: uploadImage.url,
+  //   public_id: uploadImage.public_id,
+  // },
+
+  return res.status(200).json(new ApiResponse(200, "Profile image uploaded"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -262,4 +292,5 @@ export {
   getUsersList,
   checkUsernameAvailability,
   updateUser,
+  uploadProfileImage,
 };

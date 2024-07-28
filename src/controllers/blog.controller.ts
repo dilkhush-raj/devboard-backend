@@ -6,6 +6,7 @@ import {Blog} from "../models/blog.model";
 import mongoose from "mongoose";
 import {Request, Response} from "express";
 import {User} from "src/models/user.model";
+import {parse} from "dotenv";
 
 interface CreateBlogBody {
   title: string;
@@ -235,6 +236,11 @@ const getBlogByAuthor = async (
     }
   }
 
+  // Get total count of questions
+  const totalItems = await Blog.countDocuments();
+  // @ts-ignore
+  const currentPage = parseInt(page, 10);
+
   const blog = await Blog.find({author: author})
     .sort({[sortField]: sortOrder})
     .skip((page - 1) * limit)
@@ -243,7 +249,10 @@ const getBlogByAuthor = async (
     .populate({path: "tags", select: "-createdAt -__v "})
     .lean();
 
-  return res.status(200).json(new ApiResponse(200, blog));
+  const totalPages = Math.ceil(totalItems / limit);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {blog, currentPage, totalPages, totalItems}));
 };
 
 // Get blog by tag

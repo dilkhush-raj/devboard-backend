@@ -13,8 +13,9 @@ import {
   getQuestionsByAuthorId,
   getQuestionBySlug,
 } from "../controllers/question.controller";
+import verifyJWT from "src/middlewares/auth.middleware";
 
-router.route("/create").post(createQuestion);
+router.route("/create").post(verifyJWT, createQuestion);
 router.route("/list").get(getAllQuestions);
 router.route("/search").get(searchQuestions);
 router.route("/question/:id").get(getQuestionById);

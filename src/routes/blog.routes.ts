@@ -23,7 +23,7 @@ router.get("/blog/:id", getBlogById);
 router.get("/tag/:tag", getBlogByTag);
 router.put("/update/:id", updateBlog);
 router.get("/author/:author", getBlogByAuthor);
-router.delete("/delete/:id", deleteBlogById);
+router.delete("/delete/:id", verifyJWT, deleteBlogById);
 router.get("/slug/:slug", getBlogBySlug);
 router.get("/likes", getBlogByLikes);
 router.get("/dislikes", getBlogByDislikes);

@@ -5,6 +5,7 @@ import {asyncHandler} from "../utils/asyncHandler";
 import {ApiError} from "../utils/ApiError";
 import {ApiResponse} from "../utils/ApiResponse";
 import mongoose from "mongoose";
+import {User} from "src/models/user.model";
 
 // Define the types for the request bodies
 interface CreateAnswerRequestBody {
@@ -56,6 +57,8 @@ const createAnswer = asyncHandler(async (req, res) => {
 
   if (!createdAnswer) {
     throw new ApiError(500, "Failed to create answer");
+  } else {
+    await User.findByIdAndUpdate(author, {$inc: {credit: 10}});
   }
 
   return res.status(201).json(new ApiResponse(201, createdAnswer));

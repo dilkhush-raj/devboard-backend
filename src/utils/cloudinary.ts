@@ -7,24 +7,31 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (
-  filePath: string,
-  fileName: string,
-  callback: (error: Error | null, result: UploadApiResponse | null) => void
-) => {
+const uploadOnCloudinary = async (filePath: string) => {
   try {
     if (!fs.existsSync(filePath)) {
       throw new Error("File not found");
     }
     const result = await cloudinary.uploader.upload(filePath, {
-      public_id: fileName,
       resource_type: "auto",
       upload_preset: "default",
     });
-    callback(null, result);
+    fs.unlinkSync(filePath);
   } catch (error) {
     fs.unlinkSync(filePath);
-    callback(error instanceof Error ? error : new Error(String(error)), null);
+  }
+};
+
+export const deleteFromCloudinary = async (public_id: string) => {
+  try {
+    if (public_id) {
+      const res = await cloudinary.uploader.destroy(public_id);
+      return res;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    return null;
   }
 };
 
