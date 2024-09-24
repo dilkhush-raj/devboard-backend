@@ -3,7 +3,7 @@ info:
   title: DevBoard
   version: 1.0.0
   description: >-
-    # DevBoard API Documentation
+    ## API Documentation
 
     This project aims to create a platform where developers can share knowledge, ask questions, and earn recognition for their contributions.
   termsOfService: "http://swagger.io/terms/"
@@ -13,8 +13,6 @@ info:
 servers:
   - url: http://localhost:8000/api/v1
     description: Localhost
-  - url: https://devboard-q4gr.onrender.com/api/v1
-    description: Render
 tags:
   - name: Users
   - name: Blogs

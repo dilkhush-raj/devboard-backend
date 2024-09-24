@@ -2,8 +2,18 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import cookiePraser from "cookie-parser";
+import swaggerUi from "swagger-ui-express";
+import fs from "fs";
+import path from "path";
+import YAML from "yaml";
 
 const app = express();
+
+const file = fs.readFileSync(
+  path.resolve(__dirname, "../swagger.yaml"),
+  "utf8"
+);
+const swaggerDocument = YAML.parse(file);
 
 // App Setup
 app.use(
@@ -27,18 +37,6 @@ app.use(express.json({limit: "16kb"}));
 app.use(express.static("public"));
 app.use(cookiePraser());
 
-app.get("/", (req, res) =>
-  res.json({
-    message: "/",
-    request: req.url,
-    status: "Running smoothly 🚀",
-    timestamp: new Date().toLocaleString(),
-    uptime: `${Math.floor(process.uptime() / 60)} minutes ${Math.floor(
-      process.uptime() % 60
-    )} seconds`,
-  })
-);
-
 // Routes import
 import userRoutes from "./routes/user.routes";
 import tagRoutes from "./routes/tag.routes";
@@ -58,5 +56,16 @@ app.use("/api/v1/feed", feedRoutes);
 app.use("/api/v1/leaderboard", leaderboardRoutes);
 app.use("/api/v1/saved", savedRoutes);
 app.use("/api/v1/answers", answerRoute);
+
+app.use(
+  "/",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    swaggerOptions: {
+      docExpansion: "none",
+    },
+    customSiteTitle: "DevBoard API docs",
+  })
+);
 
 export {app};
