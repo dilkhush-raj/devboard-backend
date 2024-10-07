@@ -4,15 +4,21 @@ import {ApiError} from "../utils/ApiError";
 import {User} from "../models/user.model";
 import {ApiResponse} from "../utils/ApiResponse";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import generateOTP from "../utils/generateOTP";
 import uploadOnCloudinary from "../utils/cloudinary";
+import sendEmail from "../services/sendEmail";
 
 // Generate Access and Refresh Token
 
-const generateAccessAndRefreshToken = async (userId) => {
+const generateAccessAndRefreshToken = async (userId: string) => {
   try {
     const user = await User.findById(userId);
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+    // @ts-ignore
     const accessToken = await user.generateAccessToken();
+    // @ts-ignore
     const refreshToken = await user.generateRefreshToken();
 
     user.refreshToken = refreshToken;
@@ -41,20 +47,30 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "Username or email already exists");
   }
 
+  const otp = generateOTP();
+
   const user = await User.create({
     fullname,
-    username: username.toLowerCase(),
+    username: username.toLowerCase().trim(),
     email,
     password,
+    otp,
   });
 
   const createdUser = await User.findById(user._id).select(
-    "-password -refreshToken"
+    "_id username fullname email roles permissions avatar"
   );
 
   if (!createdUser) {
     throw new ApiError(500, "Failed to registeruser");
   }
+
+  const verificationEmail = await sendEmail({
+    from: process.env.EMAIL || "reply.devboard@gmail.com",
+    to: email,
+    subject: "OTP for DevBoard",
+    html: `<h1>OTP for DevBoard</h1><p>Your OTP is ${otp}</p>`,
+  });
 
   return res.status(201).json(new ApiResponse(201, createdUser));
 });
@@ -87,7 +103,7 @@ const loginUser = asyncHandler(async (req, res) => {
     });
 
   const {accessToken, refreshToken} = await generateAccessAndRefreshToken(
-    user._id
+    user._id.toString()
   );
 
   // Set cookie in the response
@@ -276,11 +292,6 @@ const uploadProfileImage = asyncHandler(async (req, res) => {
   }
 
   console.log(uploadImage);
-
-  // image: {
-  //   url: uploadImage.url,
-  //   public_id: uploadImage.public_id,
-  // },
 
   return res.status(200).json(new ApiResponse(200, "Profile image uploaded"));
 });

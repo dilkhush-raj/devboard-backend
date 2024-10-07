@@ -46,6 +46,7 @@ import feedRoutes from "./routes/feed.routes";
 import leaderboardRoutes from "./routes/leaderbaord.routes";
 import savedRoutes from "./routes/saved.routes";
 import answerRoute from "./routes/answer.routes";
+import verifyRoute from "./routes/verify.routes";
 
 // Routes setup
 app.use("/api/v1/users", userRoutes);
@@ -56,6 +57,7 @@ app.use("/api/v1/feed", feedRoutes);
 app.use("/api/v1/leaderboard", leaderboardRoutes);
 app.use("/api/v1/saved", savedRoutes);
 app.use("/api/v1/answers", answerRoute);
+app.use("/api/v1/verify", verifyRoute);
 
 app.use(
   "/",
